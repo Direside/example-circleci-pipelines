@@ -1,0 +1,122 @@
+version: 2.1
+jobs:
+  # This job is useful when you've got a large git history and you want to be able to do a single shallow checkout and then
+  # use a workspace to persist the checked out code for later jobs in the pipeline.
+  shallow_checkout_and_save_workspace:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: Checkout (Shallow)
+          command: |
+            #!/bin/sh
+            set -e
+
+            # Workaround old docker images with incorrect $HOME
+            # check https://github.com/docker/docker/issues/2968 for details
+            if [ "${HOME}" = "/" ]
+            then
+              export HOME=$(getent passwd $(id -un) | cut -d: -f6)
+            fi
+
+            mkdir -p ~/.ssh
+
+            echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+            bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==' >> ~/.ssh/known_hosts
+
+            (umask 077; touch ~/.ssh/id_rsa)
+            chmod 0600 ~/.ssh/id_rsa
+            (cat \<<EOF > ~/.ssh/id_rsa
+            $CHECKOUT_KEY
+            EOF
+            )
+
+            # use git+ssh instead of https
+            git config --global url."ssh://git@github.com".insteadOf "https://github.com" || true
+
+            if [ -e /home/circleci/project/.git ]
+            then
+                cd /home/circleci/project
+                git remote set-url origin "$CIRCLE_REPOSITORY_URL" || true
+            else
+                mkdir -p /home/circleci/project
+                cd /home/circleci/project
+                git clone --depth=1 "$CIRCLE_REPOSITORY_URL" .
+            fi
+
+            if [ -n "$CIRCLE_TAG" ]
+            then
+              git fetch --depth=10 --force origin "refs/tags/${CIRCLE_TAG}"
+            elif [[ "$CIRCLE_BRANCH" =~ ^pull\/* ]]
+            then
+            # For PR from Fork
+              git fetch --depth=10 --force origin "$CIRCLE_BRANCH/head:remotes/origin/$CIRCLE_BRANCH"
+            else
+              git fetch --depth=10 --force origin "$CIRCLE_BRANCH:remotes/origin/$CIRCLE_BRANCH"
+            fi
+
+            if [ -n "$CIRCLE_TAG" ]
+            then
+                git reset --hard "$CIRCLE_SHA1"
+                git checkout -q "$CIRCLE_TAG"
+            elif [ -n "$CIRCLE_BRANCH" ]
+            then
+                git reset --hard "$CIRCLE_SHA1"
+                git checkout -q -B "$CIRCLE_BRANCH"
+            fi
+
+            git reset --hard "$CIRCLE_SHA1"
+            pwd
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+    go_build:
+      docker:
+        - image: circleci/go:1.13-alpine
+      steps:
+        - attach_workspace:
+            at: /home/circleci/project
+        - run:
+            name: Build
+            command: go build .
+        - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+    basic_docker_build:
+      machine: true
+      steps:
+        - attach_workspace:
+            at: /home/circleci/project
+        - run:
+            name: Build Docker image
+            command: docker build -t Direside/example-circleci-pipeline .
+
+    # If you'd like to use docker build inside of a docker executor, you can do this too using the `setup_remote_docker` step.
+    basic_docker_build_remote_docker:
+      docker:
+        - image: circleci/golang:1.13-alpine
+      steps:
+        - attach_workspace:
+            at: /home/circleci/project
+        - setup_remote_docker:
+            docker_layer_caching: true
+        - run:
+            name: Build Docker image
+            command: docker build -t Direside/example-circleci-pipeline .
+
+
+
+workflows:
+  simple_workflow:
+    jobs:
+      - checkout_and_save_workspace
+      - basic_docker_build:
+          requires:
+            - checkout_and_save_workspace
+      - basic_docker_build_remote_docker:
+          requires:
+            - checkout_and_save_workspace
