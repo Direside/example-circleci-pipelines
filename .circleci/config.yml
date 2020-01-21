@@ -72,51 +72,52 @@ jobs:
           paths:
             - .
 
-    go_build:
-      docker:
-        - image: circleci/go:1.13-alpine
-      steps:
-        - attach_workspace:
-            at: /home/circleci/project
-        - run:
-            name: Build
-            command: go build .
-        - persist_to_workspace:
+  go_build:
+    docker:
+      - image: circleci/go:1.13-alpine
+    steps:
+      - attach_workspace:
+          at: /home/circleci/project
+      - run:
+          name: Build
+          command: go build .
+      - persist_to_workspace:
           root: .
           paths:
             - .
 
-    basic_docker_build:
-      machine: true
-      steps:
-        - attach_workspace:
-            at: /home/circleci/project
-        - run:
-            name: Build Docker image
-            command: docker build -t Direside/example-circleci-pipeline .
+  basic_docker_build:
+    machine: true
+    steps:
+      - attach_workspace:
+          at: /home/circleci/project
+      - run:
+          name: Build Docker image
+          command: docker build -t Direside/example-circleci-pipeline .
 
-    # If you'd like to use docker build inside of a docker executor, you can do this too using the `setup_remote_docker` step.
-    basic_docker_build_remote_docker:
-      docker:
-        - image: circleci/golang:1.13-alpine
-      steps:
-        - attach_workspace:
-            at: /home/circleci/project
-        - setup_remote_docker:
-            docker_layer_caching: true
-        - run:
-            name: Build Docker image
-            command: docker build -t Direside/example-circleci-pipeline .
-
-
+  # If you'd like to use docker build inside of a docker executor, you can do this too using the `setup_remote_docker` step.
+  basic_docker_build_remote_docker:
+    docker:
+      - image: circleci/golang:1.13-alpine
+    steps:
+      - attach_workspace:
+          at: /home/circleci/project
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Docker image
+          command: docker build -t Direside/example-circleci-pipeline .
 
 workflows:
-  simple_workflow:
+  workflow:
     jobs:
-      - checkout_and_save_workspace
+      - shallow_checkout_and_save_workspace
+      - go_build:
+          requires:
+            - shallow_checkout_and_save_workspace
       - basic_docker_build:
           requires:
-            - checkout_and_save_workspace
+            - go_build
       - basic_docker_build_remote_docker:
           requires:
-            - checkout_and_save_workspace
+            - go_build
