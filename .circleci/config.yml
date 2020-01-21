@@ -82,13 +82,13 @@ jobs:
           name: Build
           working_directory: /home/circleci/project
           command: |
-            which go
-            go build .
+            go version
+            go build -o go-hello .
             ls -al
       - persist_to_workspace:
           root: /home/circleci/project
           paths:
-            - example-circleci-pipeline
+            - go-hello
 
   basic_docker_build:
     machine: true

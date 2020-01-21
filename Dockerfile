@@ -1,5 +1,5 @@
 FROM scratch
 
-COPY example-circleci-pipelines /app/example-circleci-pipelines
+COPY go-hello /app/go-hello
 
-CMD ["/app/example-circleci-pipelines"]
+CMD ["/app/go-hello"]
