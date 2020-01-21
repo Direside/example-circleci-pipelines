@@ -93,7 +93,7 @@ jobs:
           at: /home/circleci/project
       - run:
           name: Build Docker image
-          command: docker build -t Direside/example-circleci-pipeline .
+          command: docker build -t direside/example-circleci-pipeline .
 
   # If you'd like to use docker build inside of a docker executor, you can do this too using the `setup_remote_docker` step.
   basic_docker_build_remote_docker:
@@ -102,11 +102,10 @@ jobs:
     steps:
       - attach_workspace:
           at: /home/circleci/project
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - run:
           name: Build Docker image
-          command: docker build -t Direside/example-circleci-pipeline .
+          command: docker build -t direside/example-circleci-pipeline .
 
 workflows:
   workflow:
