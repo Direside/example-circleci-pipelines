@@ -74,7 +74,7 @@ jobs:
 
   go_build:
     docker:
-      - image: circleci/go:1.13-alpine
+      - image: circleci/golang:1.13
     steps:
       - attach_workspace:
           at: /home/circleci/project
@@ -98,7 +98,7 @@ jobs:
   # If you'd like to use docker build inside of a docker executor, you can do this too using the `setup_remote_docker` step.
   basic_docker_build_remote_docker:
     docker:
-      - image: circleci/golang:1.13-alpine
+      - image: circleci/golang:1.13
     steps:
       - attach_workspace:
           at: /home/circleci/project
