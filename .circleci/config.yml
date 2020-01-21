@@ -80,11 +80,12 @@ jobs:
           at: /home/circleci/project
       - run:
           name: Build
+          working_directory: /home/circleci/project
           command: go build .
       - persist_to_workspace:
-          root: .
+          root: /home/circleci/project
           paths:
-            - .
+            - example-circleci-pipeline
 
   basic_docker_build:
     machine: true
