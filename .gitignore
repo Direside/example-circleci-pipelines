@@ -1,4 +1,5 @@
 example-circleci-pipelines
+go-hello
 
 # Ignore all compiled config files
 **/config-compiled.yml
