@@ -113,7 +113,7 @@ jobs:
           working_directory: /home/circleci/project
           command: docker build -t direside/example-circleci-pipeline .
 
-  pipeline_variables:
+  print_pipeline_variables:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -129,7 +129,7 @@ jobs:
 workflows:
   workflow:
     jobs:
-      - pipeline_variables
+      - print_pipeline_variables
       - shallow_checkout_and_save_workspace
       - go_build:
           requires:
@@ -140,6 +140,6 @@ workflows:
       - basic_docker_build_remote_docker:
           requires:
             - go_build
-      - pipeline_variables:
+      - print_pipeline_variables:
           requires:
             - go_build
