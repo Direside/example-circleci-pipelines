@@ -3,8 +3,7 @@ jobs:
   basic_docker_build:
     machine: true
     steps:
-      - attach_workspace:
-          at: /home/circleci/project
+      - checkout
       - run:
           name: Build Docker image
           command: docker build -t Direside/example-circleci-pipeline .
@@ -14,8 +13,7 @@ jobs:
     docker:
       - image: circleci/golang:1.13-alpine
     steps:
-      - attach_workspace:
-          at: /home/circleci/project
+      - checkout
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
