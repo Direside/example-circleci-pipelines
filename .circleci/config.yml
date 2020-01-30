@@ -111,8 +111,36 @@ jobs:
       - run:
           name: Build Docker image
           working_directory: /home/circleci/project
-          command: docker build -t direside/example-circleci-pipeline .
+          command: |
+            docker build -t direside/example-circleci-pipeline .
+            docker push direside/example-circleci-pipeline
 
+  create_executable:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: Create a file and save to workspace
+          command: |
+            mkdir cmd
+            echo '#!/usr/local/bin/python3
+            print("This is the delivery pipeline")' > cmd/say_hello.py
+            chmod +x cmd/say_hello.py
+      - persist_to_workspace:
+          root: .
+          paths:
+            - cmd
+
+  run_executable:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - attach_workspace:
+          at: /home/circleci/project
+      - run:
+          name: Run our file
+          working_directory: /home/circleci/project/cmd
+          command: ./say_hello.py
   pipeline_variables:
     docker:
       - image: circleci/python:3.8

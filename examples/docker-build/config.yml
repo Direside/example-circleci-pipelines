@@ -15,7 +15,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: true  # this is only available to paid plans, not free tier. You can still do (slower) builds without it.
       - run:
           name: Build Docker image
           command: docker build -t Direside/example-circleci-pipeline .
