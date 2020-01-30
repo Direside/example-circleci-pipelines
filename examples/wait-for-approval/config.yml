@@ -1,0 +1,42 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: The First Step
+          command: |
+            echo 'Hello World!'
+            echo 'This is the delivery pipeline'
+  test:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: The First Step
+          command: |
+            echo 'Hello World!'
+            echo 'This is the delivery pipeline'
+
+  deploy:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: The First Step
+          command: |
+            echo 'DEPLOYING PROD!!!'
+
+workflows:
+  simple_workflow:
+    jobs:
+      - build
+      - test
+      - wait_for_approve:
+          type: approval
+          requires:
+            - build
+      - deploy:
+          requires:
+            - wait_for_approve

@@ -141,24 +141,62 @@ jobs:
           working_directory: /home/circleci/project/cmd
           command: ./say_hello.py
 
-  pipeline_variables:
+  # pipeline_variables:
+  #   docker:
+  #     - image: circleci/python:3.8
+  #   steps:
+  #     - run: |
+  #         echo "This is pipeline ID << pipeline.id >>"
+  #         echo "This is the pipeine number << pipeline.number >>"
+  #         echo "This is the pipeine git_url << pipeline.project.git_url >>"
+  #         echo "This is the pipeine type << pipeline.project.type >>"
+  #         echo "This is the pipeine tag << pipeline.git.tag >>"
+  #         echo "This is the pipeine branch << pipeline.git.branch >>"
+  #         echo "This is the pipeine revision << pipeline.git.revision >>"
+  #         echo "This is the pipeine base_revision << pipeline.git.base_revision >>"
+  build:
     docker:
       - image: circleci/python:3.8
     steps:
-      - run: |
-          echo "This is pipeline ID << pipeline.id >>"
-          echo "This is the pipeine number << pipeline.number >>"
-          echo "This is the pipeine git_url << pipeline.project.git_url >>"
-          echo "This is the pipeine type << pipeline.project.type >>"
-          echo "This is the pipeine tag << pipeline.git.tag >>"
-          echo "This is the pipeine branch << pipeline.git.branch >>"
-          echo "This is the pipeine revision << pipeline.git.revision >>"
-          echo "This is the pipeine base_revision << pipeline.git.base_revision >>"
+      - run:
+          name: The First Step
+          command: |
+            echo 'Hello World!'
+            echo 'This is the delivery pipeline'
+  test:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: The First Step
+          command: |
+            echo 'Hello World!'
+            echo 'This is the delivery pipeline'
+
+  deploy:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: The First Step
+          command: |
+            echo 'DEPLOYING PROD!!!'
 
 workflows:
-  workflow:
+  approval_workflow:
     jobs:
-      - pipeline_variables
+      - build
+      - test
+      - wait_for_approve:
+          type: approval
+          requires:
+            - build
+      - deploy:
+          requires:
+            - wait_for_approve
+
+  docker_build_workflow:
+    jobs:
       - shallow_checkout_and_save_workspace
       - go_build:
           requires:
@@ -167,8 +205,5 @@ workflows:
           requires:
             - go_build
       - basic_docker_build_remote_docker:
-          requires:
-            - go_build
-      - pipeline_variables:
           requires:
             - go_build
