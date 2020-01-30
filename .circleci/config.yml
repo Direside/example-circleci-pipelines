@@ -113,7 +113,6 @@ jobs:
           working_directory: /home/circleci/project
           command: |
             docker build -t direside/example-circleci-pipeline .
-            docker push direside/example-circleci-pipeline
 
   create_executable:
     docker:
@@ -141,6 +140,7 @@ jobs:
           name: Run our file
           working_directory: /home/circleci/project/cmd
           command: ./say_hello.py
+
   pipeline_variables:
     docker:
       - image: circleci/python:3.8
@@ -154,6 +154,7 @@ jobs:
           echo "This is the pipeine branch << pipeline.git.branch >>"
           echo "This is the pipeine revision << pipeline.git.revision >>"
           echo "This is the pipeine base_revision << pipeline.git.base_revision >>"
+
 workflows:
   workflow:
     jobs:
