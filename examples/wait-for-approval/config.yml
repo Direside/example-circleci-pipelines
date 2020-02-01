@@ -19,14 +19,14 @@ jobs:
             echo 'Hello World!'
             echo 'This is the delivery pipeline'
 
-  deploy:
+  staging_deploy:
     docker:
       - image: circleci/python:3.8
     steps:
-      - run:
-          name: The First Step
+      - deploy:
+          name: Staging Deployment
           command: |
-            echo 'DEPLOYING PROD!!!'
+            echo 'DEPLOYING STAG!!!'
 
 workflows:
   simple_workflow:
