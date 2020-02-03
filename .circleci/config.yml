@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  - approvals: commitdev/approvals@dev-approvals-orb
+  - approvals: commitdev/approvals@dev:approvals-orb
 
 jobs:
   # This job is useful when you've got a large git history and you want to be able to do a single shallow checkout and then
