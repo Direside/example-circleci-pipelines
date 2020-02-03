@@ -182,10 +182,11 @@ jobs:
     docker:
       - image: circleci/python:3.8
     steps:
-      - run:
-          name: The First Step
+      - approvals/get
+      - deploy:
+          name: Staging Deployment
           command: |
-            echo 'DEPLOYING PROD!!!'
+            echo 'Deploying to Production approved by $WORKFLOW_APPROVER'
 
 workflows:
   approval_workflow:
