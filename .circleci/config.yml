@@ -197,14 +197,9 @@ workflows:
           type: approval
           requires:
             - build
-      - wait_for_approve2:
-          type: approval
-          requires:
-            - build
       - deploy:
           requires:
             - wait_for_approve
-            - wait_for_approve2
 
   docker_build_workflow:
     jobs:
