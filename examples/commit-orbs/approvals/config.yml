@@ -1,0 +1,38 @@
+version: 2.1
+
+orbs:
+  - approvals: commitdev/approvals@dev-approvals-orb
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - run:
+          name: The First Step
+          command: |
+            echo 'Hello World!'
+            echo 'This is the delivery pipeline'
+
+  staging_deploy:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - approvals/get
+      - deploy:
+          name: Staging Deployment
+          command: |
+            echo 'DEPLOYING STAG approved by $WORKFLOW_APPROVER!!!'
+
+workflows:
+  simple_workflow:
+    jobs:
+      - build
+      - test
+      - wait_for_approve:
+          type: approval
+          requires:
+            - build
+      - deploy:
+          requires:
+            - wait_for_approve
