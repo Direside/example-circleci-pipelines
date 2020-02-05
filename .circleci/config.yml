@@ -205,6 +205,20 @@ workflows:
       - deploy:
           requires:
             - wait_for_approve
+  
+  approval_workflow_with_queue:
+    jobs:
+      - build
+      - test
+      - wait_for_approve:
+          type: approval
+          requires:
+            - build
+      - queue/until_front_of_line
+      - deploy:
+          requires:
+            - queue/until_front_of_line
+            - wait_for_approve
 
   docker_build_workflow:
     jobs:
