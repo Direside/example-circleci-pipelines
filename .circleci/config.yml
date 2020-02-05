@@ -214,7 +214,7 @@ workflows:
           type: approval
           requires:
             - build
-      - queue/until_front_of_line
+      - queue/block_workflow
       - deploy:
           requires:
             - queue/until_front_of_line
