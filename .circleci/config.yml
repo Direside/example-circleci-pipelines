@@ -217,7 +217,7 @@ workflows:
       - queue/block_workflow
       - deploy:
           requires:
-            - queue/until_front_of_line
+            - queue/block_workflow
             - wait_for_approve
 
   docker_build_workflow:
