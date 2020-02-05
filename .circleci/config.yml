@@ -188,7 +188,7 @@ jobs:
       - deploy:
           name: Staging Deployment
           command: |
-            sleep 50
+            sleep 52
             echo 'Deploying to Production approved by $WORKFLOW_APPROVER'
 
 workflows:
