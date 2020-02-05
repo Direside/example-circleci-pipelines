@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   approvals: commitdev/approvals@0.0.1
+  queue: eddiewebb/queue@1.4.2
 
 jobs:
   # This job is useful when you've got a large git history and you want to be able to do a single shallow checkout and then
@@ -182,6 +183,8 @@ jobs:
       - image: circleci/python:3.8
     steps:
       - approvals/get
+      - queue/until_front_of_line:
+          time: '10'
       - deploy:
           name: Staging Deployment
           command: |
