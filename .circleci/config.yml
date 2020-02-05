@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  approvals: commitdev/approvals@0.0.1
+  approvals: commitdev/approvals@dev:approvals-orb
   queue: eddiewebb/queue@1.4.2
 
 jobs:
