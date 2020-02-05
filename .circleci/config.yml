@@ -201,6 +201,9 @@ workflows:
             - build
       - deploy:
           requires:
+            - build
+      - deploy:
+          requires:
             - wait_for_approve
 
   docker_build_workflow:
