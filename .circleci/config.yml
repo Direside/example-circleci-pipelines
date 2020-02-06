@@ -205,7 +205,7 @@ jobs:
             echo 'Deploying to Production approved by $WORKFLOW_APPROVER'
 
 workflows:
-  # Trigger 4
+  # Trigger 1b
   approval_workflow_ONE:
     jobs:
       - build
