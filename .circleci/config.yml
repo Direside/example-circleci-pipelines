@@ -178,7 +178,20 @@ jobs:
             echo 'Hello World!'
             echo 'This is the delivery pipeline'
 
-  deploy:
+  deploy_with_queue:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - approvals/get
+      - queue/until_front_of_line:
+          time: '10'
+      - deploy:
+          name: Staging Deployment
+          command: |
+            sleep 52
+            echo 'Deploying to Production approved by $WORKFLOW_APPROVER'
+
+  deploy_with_queue:
     docker:
       - image: circleci/python:3.8
     steps:
@@ -192,22 +205,15 @@ jobs:
             echo 'Deploying to Production approved by $WORKFLOW_APPROVER'
 
 workflows:
-  approval_workflow:
+  approval_workflow_ONE:
     jobs:
       - build
       - test
-      - wait_for_approve:
-          type: approval
+      - deploy_with_queue:
           requires:
             - build
-      - deploy:
-          requires:
-            - build
-      - deploy:
-          requires:
-            - wait_for_approve
 
-  approval_workflow_with_queue:
+  approval_workflow_TWO:
     jobs:
       - build
       - test
@@ -221,6 +227,20 @@ workflows:
       - deploy:
           requires:
             - queue/block_workflow
+
+  approval_workflow_THREE:
+    jobs:
+      - build
+      - test
+      - queue/block_workflow:
+          requires:
+            - build
+      - wait_for_approve:
+          type: approval
+          requires:
+            - queue/block_workflow
+      - deploy:
+          requires:
             - wait_for_approve
 
   docker_build_workflow:
