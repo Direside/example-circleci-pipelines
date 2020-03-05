@@ -276,13 +276,13 @@ workflows:
           requires:
             - deploy_production
 
-  # approval_workflow_ONE:
-  #   jobs:
-  #     - build
-  #     - test
-  #     - deploy_with_queue:
-  #         requires:
-  #           - build
+  approval_workflow_OTHER:
+    jobs:
+      - build
+      - test
+      - deploy_with_queue:
+          requires:
+            - build
 
   # approval_workflow_TWO:
   #   jobs:
