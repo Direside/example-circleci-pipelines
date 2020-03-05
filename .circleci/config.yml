@@ -183,8 +183,6 @@ jobs:
       - image: circleci/python:3.8
     steps:
       - approvals/get
-      - queue/until_front_of_line:
-          time: '10'
       - deploy:
           name: Staging Deployment
           command: |
@@ -205,7 +203,22 @@ jobs:
             echo 'Deploying to Production approved by $WORKFLOW_APPROVER'
 
 workflows:
-  # Trigger 2b
+  approval_workflow_ENVIRONMENTS:
+    jobs:
+      - build
+      - test
+      - deploy:
+          environment: staging
+          blocking: true
+      - e2e_test:
+          environment: staging
+          blocking: true
+      - deploy:
+          environment: production
+          blocking: true
+      - post_deploy:
+          environment: production
+          blocking: false # Allows us to have steps run that don't block other deploys to this environment.1
   approval_workflow_ONE:
     jobs:
       - build
