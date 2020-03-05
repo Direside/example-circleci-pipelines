@@ -253,17 +253,29 @@ workflows:
       - build
       - test
       - deploy:
+          name: deploy_staging
           environment: staging
           blocking: true
+          requires:
+            - build
+            - test
       - e2e_test:
           environment: staging
           blocking: true
+          requires:
+            - deploy_staging
       - deploy:
+          name: deploy_production
           environment: production
           blocking: true
+          requires:
+            - e2e_test
       - post_deploy:
           environment: production
-          blocking: false # Allows us to have steps run that don't block other deploys to this environment.1
+          blocking: false # Allows us to have steps run that don't block other deploys to this environment.
+          requires:
+            - deploy_production
+
   # approval_workflow_ONE:
   #   jobs:
   #     - build
