@@ -178,9 +178,36 @@ jobs:
             echo 'Hello World!'
             echo 'This is the delivery pipeline'
 
+  e2e_test:
+    docker:
+      - image: circleci/node:12
+    parameters:
+      environment:
+        type: string
+        description: Environment to test.
+      blocking:
+        type: boolean
+        default: true
+        description: |
+          Whether this step running will block all other jobs against this environment.
+    steps:
+      - run:
+          command: |
+            sleep 120
+            echo 'Done testing << parameters.environment >>'
+
   deploy:
     docker:
       - image: circleci/python:3.8
+    parameters:
+      environment:
+        type: string
+        description: Environment to test.
+      blocking:
+        type: boolean
+        default: true
+        description: |
+          Whether this step running will block all other jobs against this environment.
     steps:
       - approvals/get
       - deploy:
@@ -188,6 +215,24 @@ jobs:
           command: |
             sleep 52
             echo 'Deploying to Production approved by $WORKFLOW_APPROVER'
+
+  post_deploy:
+    docker:
+      - image: circleci/node:12
+    parameters:
+      environment:
+        type: string
+        description: Environment to test.
+      blocking:
+        type: boolean
+        default: true
+        description: |
+          Whether this step running will block all other jobs against this environment.
+    steps:
+      - run:
+          command: |
+            sleep 120
+            echo 'Done post-deploy for << parameters.environment >>'
 
   deploy_with_queue:
     docker:
@@ -219,53 +264,53 @@ workflows:
       - post_deploy:
           environment: production
           blocking: false # Allows us to have steps run that don't block other deploys to this environment.1
-  approval_workflow_ONE:
-    jobs:
-      - build
-      - test
-      - deploy_with_queue:
-          requires:
-            - build
+  # approval_workflow_ONE:
+  #   jobs:
+  #     - build
+  #     - test
+  #     - deploy_with_queue:
+  #         requires:
+  #           - build
 
-  approval_workflow_TWO:
-    jobs:
-      - build
-      - test
-      - wait_for_approve:
-          type: approval
-          requires:
-            - build
-      - queue/block_workflow:
-          requires:
-            - wait_for_approve
-      - deploy:
-          requires:
-            - queue/block_workflow
+  # approval_workflow_TWO:
+  #   jobs:
+  #     - build
+  #     - test
+  #     - wait_for_approve:
+  #         type: approval
+  #         requires:
+  #           - build
+  #     - queue/block_workflow:
+  #         requires:
+  #           - wait_for_approve
+  #     - deploy:
+  #         requires:
+  #           - queue/block_workflow
 
-  approval_workflow_THREE:
-    jobs:
-      - build
-      - test
-      - queue/block_workflow:
-          requires:
-            - build
-      - wait_for_approve:
-          type: approval
-          requires:
-            - queue/block_workflow
-      - deploy:
-          requires:
-            - wait_for_approve
+  # approval_workflow_THREE:
+  #   jobs:
+  #     - build
+  #     - test
+  #     - queue/block_workflow:
+  #         requires:
+  #           - build
+  #     - wait_for_approve:
+  #         type: approval
+  #         requires:
+  #           - queue/block_workflow
+  #     - deploy:
+  #         requires:
+  #           - wait_for_approve
 
-  docker_build_workflow:
-    jobs:
-      - shallow_checkout_and_save_workspace
-      - go_build:
-          requires:
-            - shallow_checkout_and_save_workspace
-      - basic_docker_build:
-          requires:
-            - go_build
-      - basic_docker_build_remote_docker:
-          requires:
-            - go_build
+  # docker_build_workflow:
+  #   jobs:
+  #     - shallow_checkout_and_save_workspace
+  #     - go_build:
+  #         requires:
+  #           - shallow_checkout_and_save_workspace
+  #     - basic_docker_build:
+  #         requires:
+  #           - go_build
+  #     - basic_docker_build_remote_docker:
+  #         requires:
+  #           - go_build
