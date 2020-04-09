@@ -1,0 +1,59 @@
+---
+version: 2.1
+orbs:
+  slack-message: commitdev/slack-message@0.0.3
+
+jobs:
+ test_smoke:
+    docker:
+        - image: circleci/node:12-browsers
+    parallelism: 2
+    parameters:
+      base_url:
+        type: string
+        default: http://${CIRCLE_BRANCH}.example.com
+        description: |
+          URL to run the tests against.
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - fi:ge:rp:ri:nt
+      - run:
+          name: Add Github to Known Hosts
+          command: echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==' >> ~/.ssh/known_hosts
+      - run:
+          name: Checkout Tests
+          command: |
+            git clone git@github.com:example/smoke-tests .
+      - restore_cache:
+          keys:
+            - node-cache-v1-{{ checksum "package-lock.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - node-cache-v1-
+      - run:
+          name: NPM Install
+          command: |
+            npm ci --prefer-offline --no-audit
+      - run:
+          name: Run tests
+          command: |
+            mkdir logs
+            TESTFILES=$(circleci tests glob "./test/specs/**/*.specs.ts" | circleci tests split)
+            echo $TESTFILES
+            npm run test $TESTFILES
+      - save_cache:
+          paths:
+            - node_modules
+          key: node-cache-v1-{{ checksum "package-lock.json" }}
+      - store_test_results:
+          path: ./reports
+      - store_artifacts:
+          path: ./reports
+      - store_artifacts:
+          path: ./screenshots
+      - store_artifacts:
+          path: ./logs
+      - slack-message/notify:
+          fallback-channel: staging-deploy
+          fail_only: true
+          message: Smoke Tests failed.
